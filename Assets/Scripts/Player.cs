@@ -12,9 +12,7 @@ namespace C042 {
         [SerializeField] private InputActionReference _inputMovementRef;
         private InputAction _inputMovement;
 
-        [SerializeField] private InputActionReference _inputDisparRef;
-        [SerializeField] private InputActionReference _inputSegonDisparRef;
-        [SerializeField] private LayerMask _disparMask;
+        
 
         [SerializeField] private float _speed = 3f;
         [SerializeField] private Transform _camara;
@@ -24,6 +22,11 @@ namespace C042 {
 
         private InputAction _inputJump;
         [SerializeField] private InputActionReference _inputJumpRef;
+        [SerializeField] private InputActionReference _inputDisparRef;
+        [SerializeField] private LayerMask _disparMask;
+        [SerializeField] private InputActionReference _inputSegonDisparRef;
+        [SerializeField] private LayerMask _pikminMask;
+        [SerializeField] private Material[] _materialsInPikmin;
 
         [SerializeField] private MissatgeGlobalVector3 _eventMoure;
 
@@ -57,6 +60,7 @@ namespace C042 {
             _inputMovement.Enable();
             _inputLook.Enable();
             _inputDisparRef.action.Enable();
+            _inputSegonDisparRef.action.Enable();
             _inputJump.Enable();
         }
 
@@ -65,14 +69,34 @@ namespace C042 {
             _inputMovement.Disable();
             _inputLook.Disable();
             _inputDisparRef.action.Disable();
+            _inputSegonDisparRef.action.Disable();
             _inputJump.Disable();
         }
 
-        private void OnSegonDispar (InputAction.CallbackContext context)
+        private void OnSegonDispar(InputAction.CallbackContext context)
         {
-            if (Physics.Raycast(_camara.position, _camara.forward, out RaycastHit hit, 20f, _disparMask))
+            Debug.Log("RIGHT CLICK ACTION PERFORMED");
+            if (Physics.Raycast(_camara.position, _camara.forward, out RaycastHit hit, 20f, _pikminMask))
             {
-                Debug.Log("Aqui pasará algo.");
+                Debug.Log("l'hi he donat al " + hit.collider.name);
+                GameObject pikminGO = hit.collider.gameObject;
+                MeshRenderer renderer = pikminGO.GetComponentInChildren<MeshRenderer>();
+
+                if (renderer != null)
+                {
+                    if (renderer.sharedMaterial.name.Contains("Neon_03"))
+                    {
+                        Debug.Log("HA ENTRADO EN EL IF DEL NOMBRE DEL RENDERER");
+                        renderer.material = _materialsInPikmin[0];
+                    }
+                    else
+                    {
+                        renderer.material = _materialsInPikmin[1];
+                    }
+                } else
+                {
+                    Debug.Log("EL RENDERER ES NULL");
+                }
             }
         }
 
