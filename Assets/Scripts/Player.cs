@@ -13,9 +13,18 @@ namespace C042 {
         private InputAction _inputMovement;
 
         
+        
 
         [SerializeField] private float _speed = 3f;
-        [SerializeField] private Transform _camara;
+        [SerializeField] private Camera _camara;
+        [SerializeField] private Camera[] _camaras;
+        private int _indexArrayCamaras = 0;
+        [SerializeField] private InputActionReference _cam1Ref;
+        [SerializeField] private InputActionReference _cam2Ref;
+        [SerializeField] private InputActionReference _cam3Ref;
+        private InputAction _cam1;
+        private InputAction _cam2;
+        private InputAction _cam3;
 
         private InputAction _inputLook;
         [SerializeField] private InputActionReference _inputLookRef;
@@ -53,6 +62,19 @@ namespace C042 {
             _inputSegonDisparRef.action.performed += OnSegonDispar;
             _inputJump.performed += OnSaltar;
 
+            _cam1 = _cam1Ref.action;
+            _cam2 = _cam2Ref.action;
+            _cam3 = _cam3Ref.action;
+
+            _cam1.performed += OnCam1Canvi;
+            _cam2.performed += OnCam2Canvi;
+            _cam3.performed += OnCam3Canvi;
+
+            for (int i = 0; i < _camaras.Length; i++)
+            { 
+                _camaras[i].enabled = (i == _indexArrayCamaras);
+            }
+            _camara = _camaras[_indexArrayCamaras];
         }
 
         private void OnEnable()
@@ -62,6 +84,9 @@ namespace C042 {
             _inputDisparRef.action.Enable();
             _inputSegonDisparRef.action.Enable();
             _inputJump.Enable();
+            _cam1.Enable();
+            _cam2.Enable();
+            _cam3.Enable();
         }
 
         private void OnDisable()
@@ -71,12 +96,48 @@ namespace C042 {
             _inputDisparRef.action.Disable();
             _inputSegonDisparRef.action.Disable();
             _inputJump.Disable();
+            _cam1.Disable();
+            _cam2.Disable();
+            _cam3.Disable();
+        }
+
+        private void OnCam1Canvi(InputAction.CallbackContext context)
+        {
+            SetCamara(0);
+        }
+
+        private void OnCam2Canvi(InputAction.CallbackContext context)
+        {
+            SetCamara(1);
+        }
+
+        private void OnCam3Canvi(InputAction.CallbackContext context)
+        {
+            SetCamara(2);
+        }
+
+        private void SetCamara(int index)
+        {
+            if (index < 0 || index >= _camaras.Length) return;
+
+            _indexArrayCamaras = index;
+            for (int i = 0; i < _camaras.Length; i++)
+            {
+                _camaras[i].enabled = (i == _indexArrayCamaras);
+                if (i == 2)
+                {
+                    Vector3 euler = _camaras[i].transform.eulerAngles;
+                    euler.y = -129.306f;
+                    _camaras[i].transform.eulerAngles = euler;
+                }
+            }
+            _camara = _camaras[_indexArrayCamaras];
         }
 
         private void OnSegonDispar(InputAction.CallbackContext context)
         {
             Debug.Log("RIGHT CLICK ACTION PERFORMED");
-            if (Physics.Raycast(_camara.position, _camara.forward, out RaycastHit hit, 20f, _pikminMask))
+            if (Physics.Raycast(_camara.transform.position, _camara.transform.forward, out RaycastHit hit, 20f, _pikminMask))
             {
                 Debug.Log("l'hi he donat al " + hit.collider.name);
                 GameObject pikminGO = hit.collider.gameObject;
@@ -102,9 +163,9 @@ namespace C042 {
 
         private void OnDisparar (InputAction.CallbackContext context)
         {
-            if(Physics.Raycast(_camara.position, _camara.forward, out RaycastHit hit, 20f, _disparMask))
+            if(Physics.Raycast(_camara.transform.position, _camara.transform.forward, out RaycastHit hit, 20f, _disparMask))
             {
-                Debug.DrawLine(_camara.position, hit.point, Color.red, 4f);
+                Debug.DrawLine(_camara.transform.position, hit.point, Color.red, 4f);
                 _eventMoure.Raise(hit.point);
             } 
         }
@@ -138,7 +199,7 @@ namespace C042 {
 
             mirarHorizontal += delta.x * _mouseSensibility * _constantSensibility;
 
-            _camara.localEulerAngles = new Vector3(mirarVertical, 0f, 0f);
+            _camara.transform.localEulerAngles = new Vector3(mirarVertical, 0f, 0f);
             transform.localEulerAngles = new Vector3(0f, mirarHorizontal, 0f);
         }
 
